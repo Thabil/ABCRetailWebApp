@@ -1,0 +1,30 @@
+﻿@model IEnumerable<string>
+
+<h1>Log Files</h1>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No log files found</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var file in Model)
+            {
+                <tr>
+                    <td>@file</td>
+                    <td>
+                        <a asp-action="Download" asp-route-filename="@file" class="btn btn-primary btn-sm">Download</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

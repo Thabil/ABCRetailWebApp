@@ -1,0 +1,66 @@
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@model List<(ABCRetailWebApp.Models.ProductEntity Product, string? SasUrl)>
+
+@{
+    ViewData["Title"] = "Shop";
+    var categories = Model
+        .Select(m => m.Product.Category)
+        .Where(c => !string.IsNullOrEmpty(c))
+        .Distinct()
+        .OrderBy(c => c)
+        .ToList();
+    var currentCategory = HttpContextAccessor.HttpContext!.Request.Query["category"].ToString();
+}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1>Shop</h1>
+    <div class="d-flex align-items-center gap-2">
+        @if (ViewBag.IsLoggedIn == true)
+        {
+            <a asp-action="MyOrders" class="btn btn-brand-outline btn-sm">
+                <i class="bi bi-box me-1"></i>My Orders
+            </a>
+        }
+        <a asp-action="Cart" class="btn btn-brand btn-sm position-relative">
+            <i class="bi bi-bag me-1"></i>Cart
+            @if (ViewBag.CartCount > 0)
+            {
+                <span class="cart-badge" style="top:-6px; right:-6px;">@ViewBag.CartCount</span>
+            }
+        </a>
+    </div>
+</div>
+
+@if (categories.Any())
+{
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="@Url.Action("Index")"
+           class="category-pill @(currentCategory == "" ? "active" : "")">All</a>
+        @foreach (var cat in categories)
+        {
+            <a href="@Url.Action("Index", new { category = cat })"
+               class="category-pill @(currentCategory == cat ? "active" : "")">@cat</a>
+        }
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-bag-x"></i></div>
+        <h5>No products found</h5>
+        <p>Try a different category or check back later.</p>
+        <a asp-action="Index" class="btn btn-brand-outline mt-2">View All Products</a>
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                @await Html.PartialAsync("~/Views/Shared/_ProductCard.cshtml", item)
+            </div>
+        }
+    </div>
+}

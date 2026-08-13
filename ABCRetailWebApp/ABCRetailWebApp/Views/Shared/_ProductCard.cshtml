@@ -1,0 +1,38 @@
+@model (ABCRetailWebApp.Models.ProductEntity Product, string? SasUrl)
+
+<div class="card h-100 shadow-sm">
+    @if (!string.IsNullOrEmpty(Model.SasUrl))
+    {
+        <img src="@Model.SasUrl" class="card-img-top" alt="@Model.Product.ProductName" style="height:200px; object-fit:cover;">
+    }
+    else
+    {
+        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:200px;">
+            <span class="text-muted">No Image</span>
+        </div>
+    }
+    <div class="card-body">
+        <h5 class="card-title">@Model.Product.ProductName</h5>
+        <p class="card-text text-muted">@Model.Product.Category</p>
+        <p class="card-text text-success fw-bold">R @Model.Product.Price.ToString("F2")</p>
+        <p class="card-text small">
+            @if (Model.Product.StockQuantity > 0)
+            {
+                <span class="badge bg-success">In Stock (@Model.Product.StockQuantity)</span>
+            }
+            else
+            {
+                <span class="badge bg-danger">Out of Stock</span>
+            }
+        </p>
+        <form asp-action="AddToCart" method="post">
+            <input type="hidden" name="productId" value="@Model.Product.RowKey" />
+            <div class="d-flex gap-2">
+                <input type="number" name="quantity" value="1" min="1" max="@Model.Product.StockQuantity" class="form-control form-control-sm" style="width:70px;" />
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1" @(Model.Product.StockQuantity <= 0 ? "disabled" : "")>
+                    🛒 Add to Cart
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

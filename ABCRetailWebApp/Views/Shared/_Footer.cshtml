@@ -1,0 +1,24 @@
+<footer class="site-footer">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="footer-brand">ABC Retail</div>
+                <div class="footer-tagline">Premium goods, driven by cloud innovation.</div>
+            </div>
+            <div class="col-md-4">
+                <div class="footer-heading">Shop</div>
+                <a asp-controller="Products" asp-action="Index">All Products</a>
+                <a asp-controller="Products" asp-action="Cart">My Cart</a>
+                <a asp-controller="Products" asp-action="MyOrders">My Orders</a>
+            </div>
+            <div class="col-md-4">
+                <div class="footer-heading">Account</div>
+                <a asp-controller="Account" asp-action="Login">Login</a>
+                <a asp-controller="Account" asp-action="Register">Register</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; @DateTime.Now.Year ABC Retail. All rights reserved.
+        </div>
+    </div>
+</footer>

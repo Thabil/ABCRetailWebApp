@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Data.Tables" Version="12.11.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.29.1" />
+    <PackageReference Include="Azure.Storage.Files.Shares" Version="12.27.1" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.27.1" />
+    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="seed-data.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Include local documentation folder so it appears in Solution Explorer -->
+  <ItemGroup>
+    <!-- Link the workspace-level version-control folder into the project so it appears
+         in Solution Explorer even though files live at the workspace root. -->
+    <Content Include="..\version-control\**\*.*">
+      <Link>version-control\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <None Include="..\.gitignore">
+      <Link>.gitignore</Link>
+    </None>
+  </ItemGroup>
+  <!-- Note: do not explicitly include Razor partials here; let the Razor engine discover Views/Shared at build/runtime -->
+
+</Project>

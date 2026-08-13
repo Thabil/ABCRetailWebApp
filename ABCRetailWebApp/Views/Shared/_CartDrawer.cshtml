@@ -1,0 +1,71 @@
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@using ABCRetailWebApp.Models
+@{
+    var ctx = HttpContextAccessor.HttpContext!;
+    var cartJson = ctx.Session.GetString("Cart");
+    var cart = string.IsNullOrEmpty(cartJson)
+        ? new List<CartItem>()
+        : System.Text.Json.JsonSerializer.Deserialize<List<CartItem>>(cartJson) ?? new List<CartItem>();
+    var total = cart.Sum(i => i.Total);
+}
+
+<div class="cart-drawer" id="cartDrawer" aria-hidden="true" role="dialog" aria-label="Shopping cart">
+    <div class="drawer-header">
+        <h5>
+            <i class="bi bi-bag me-2"></i>Cart
+            <span class="text-small text-muted ms-1">(@cart.Sum(i => i.Quantity) items)</span>
+        </h5>
+        <button class="btn btn-brand-outline btn-sm" id="closeCart" aria-label="Close cart">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div class="drawer-items">
+        @if (!cart.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-icon"><i class="bi bi-bag"></i></div>
+                <h5>Your cart is empty</h5>
+                <p>Add some products to get started.</p>
+            </div>
+        }
+        else
+        {
+            foreach (var item in cart)
+            {
+                <div class="d-flex align-items-center mb-3 gap-3">
+                    <div class="product-img-placeholder" style="width:56px; height:56px; font-size:1.1rem; border-radius:var(--radius); flex-shrink:0;">
+                        @if (!string.IsNullOrEmpty(item.ImageBlobName))
+                        {
+                            <img src="@item.ImageBlobName" style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius);" alt="@item.ProductName" />
+                        }
+                        else
+                        {
+                            <i class="bi bi-image"></i>
+                        }
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="drawer-item-name text-truncate">@item.ProductName</div>
+                        <div class="drawer-item-meta">@item.Quantity &times; R@item.Price.ToString("F2")</div>
+                    </div>
+                    <div class="drawer-item-total flex-shrink-0">R@item.Total.ToString("F2")</div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="drawer-footer">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-small fw-600 text-muted">Total</span>
+            <span class="text-price" style="font-size:1.05rem;">R@total.ToString("F2")</span>
+        </div>
+        <div class="d-grid gap-2">
+            <a asp-controller="Products" asp-action="Cart" class="btn btn-brand-outline btn-sm">
+                View Cart
+            </a>
+            <a asp-controller="Products" asp-action="Checkout" class="btn btn-brand btn-sm">
+                Checkout
+            </a>
+        </div>
+    </div>
+</div>

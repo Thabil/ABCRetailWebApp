@@ -1,0 +1,111 @@
+﻿@model ABCRetailWebApp.Models.ProductEntity
+
+<h1>Create New Product</h1>
+<hr />
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+
+        <form asp-action="Create"
+              enctype="multipart/form-data"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="PartitionKey" />
+            <input type="hidden" asp-for="RowKey" />
+            <input type="hidden" asp-for="CreatedAt" />
+            <input type="hidden" asp-for="ImageBlobName" />
+            <input type="hidden" asp-for="IsAvailable" />
+
+            <div class="form-group mb-3">
+                <label asp-for="ProductName" class="control-label"></label>
+                <input asp-for="ProductName" class="form-control" required />
+                <span asp-validation-for="ProductName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <!-- ============================================================
+                 PRICE - type="text" with JavaScript
+                 ============================================================ -->
+            <div class="form-group mb-3">
+                <label asp-for="Price" class="control-label"></label>
+                <input asp-for="Price"
+                       class="form-control"
+                       type="text"
+                       id="Price"
+                       placeholder="e.g. 99.99"
+                       required />
+                <span asp-validation-for="Price" class="text-danger"></span>
+                <small class="text-muted">Enter the price using a dot, e.g. 99.99</small>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="StockQuantity" class="control-label"></label>
+                <input asp-for="StockQuantity"
+                       class="form-control"
+                       type="number"
+                       step="1"
+                       min="0"
+                       required />
+                <span asp-validation-for="StockQuantity" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Category" class="control-label"></label>
+                <input asp-for="Category" class="form-control" required />
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="imageFile" class="control-label">Product Image</label>
+                <input type="file"
+                       name="imageFile"
+                       class="form-control"
+                       accept="image/*" />
+                <small class="text-muted">Select an image file (jpg, png, etc.)</small>
+            </div>
+
+            <div class="form-group mt-4">
+                <button type="submit" class="btn btn-primary">Create</button>
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var priceInput = document.getElementById('Price');
+            if (priceInput) {
+                priceInput.addEventListener('input', function(e) {
+                    this.value = this.value.replace(',', '.');
+                });
+            }
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

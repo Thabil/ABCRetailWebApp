@@ -1,0 +1,194 @@
+@model List<ABCRetailWebApp.Models.CartItem>
+
+@{
+    ViewData["Title"] = "Checkout";
+    var total      = Model.Sum(i => i.Total);
+    var items      = Model.Sum(i => i.Quantity);
+    var shipping   = 50.0;
+    var grandTotal = total + shipping;
+}
+
+<div class="page-header">
+    <h1>Checkout</h1>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">Order Items (@items)</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.ProductName</td>
+                                    <td>@item.Quantity</td>
+                                    <td>R @item.Price.ToString("F2")</td>
+                                    <td class="text-price fw-600">R @item.Total.ToString("F2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header card-header-dark">Order Summary</div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted text-small">Subtotal</span>
+                    <span class="text-small">R @total.ToString("F2")</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted text-small">Shipping</span>
+                    <span class="text-small">R @shipping.ToString("F2")</span>
+                </div>
+                <hr class="my-3" />
+                <div class="d-flex justify-content-between fw-600">
+                    <span>Total</span>
+                    <span class="text-price">R @grandTotal.ToString("F2")</span>
+                </div>
+            </div>
+        </div>
+        <button id="payButton" class="btn btn-brand w-100 mb-2">
+            <i class="bi bi-credit-card me-2"></i>Pay Now — R @grandTotal.ToString("F2")
+        </button>
+        <a asp-action="Cart" class="btn btn-brand-outline w-100">
+            <i class="bi bi-arrow-left me-1"></i>Back to Cart
+        </a>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header modal-header-brand">
+                <h5 class="modal-title" id="paymentModalLabel">
+                    <i class="bi bi-credit-card me-2"></i>Payment Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="paymentForm">
+                    <div class="mb-3">
+                        <label class="form-label">Card Number</label>
+                        <input type="text" id="cardNumber" class="form-control"
+                               placeholder="4242 4242 4242 4242" required />
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">Expiry</label>
+                            <input type="text" id="expiryDate" class="form-control"
+                                   placeholder="MM/YY" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">CVC</label>
+                            <input type="text" id="cvc" class="form-control"
+                                   placeholder="123" required />
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 rounded" style="background:var(--purple-50);">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted text-small">Amount due</span>
+                            <strong class="text-price">R @grandTotal.ToString("F2")</strong>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                <button type="button" class="btn btn-brand-outline" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmPayment" class="btn btn-brand px-4">
+                    Confirm Payment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background:var(--success-text); color:#fff; border-radius:var(--radius-lg) var(--radius-lg) 0 0; border-bottom:none;">
+                <h5 class="modal-title" id="confirmModalLabel">
+                    <i class="bi bi-check-circle me-2"></i>Order Placed!
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-5">
+                <i class="bi bi-bag-check" style="font-size:3rem; color:var(--success-text);"></i>
+                <h4 class="mt-3 mb-2">Your order is confirmed</h4>
+                <p class="text-muted text-small mb-3">
+                    Order ID: <strong id="orderIdDisplay"></strong>
+                </p>
+                <span class="badge-stock">Processing</span>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <a id="continueShoppingBtn" class="btn btn-brand px-4">Continue Shopping</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const payButton        = document.getElementById('payButton');
+            const confirmPayment   = document.getElementById('confirmPayment');
+            const paymentModal     = new bootstrap.Modal(document.getElementById('paymentModal'));
+            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+
+            payButton.addEventListener('click', function () { paymentModal.show(); });
+
+            confirmPayment.addEventListener('click', function () {
+                const cardNumber = document.getElementById('cardNumber').value;
+                const expiryDate = document.getElementById('expiryDate').value;
+                const cvc        = document.getElementById('cvc').value;
+
+                if (!cardNumber || !expiryDate || !cvc) {
+                    alert('Please fill in all payment details.');
+                    return;
+                }
+
+                fetch('/Products/ProcessPayment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ''
+                    },
+                    body: JSON.stringify({ cardNumber, expiryDate, cvc })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    paymentModal.hide();
+                    if (data.success) {
+                        document.getElementById('orderIdDisplay').textContent = data.orderId;
+                        confirmationModal.show();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(err => { paymentModal.hide(); alert('An error occurred: ' + err.message); });
+            });
+
+            document.getElementById('continueShoppingBtn').addEventListener('click', function (e) {
+                e.preventDefault();
+                window.location.href = '/Products';
+            });
+        });
+    </script>
+}

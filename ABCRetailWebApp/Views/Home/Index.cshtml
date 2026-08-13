@@ -1,0 +1,91 @@
+@{
+    ViewData["Title"] = "ABC Retail";
+}
+
+<!-- Hero -->
+<div class="hero-section text-center mb-5">
+    <h1>Quality Products, Delivered with Confidence</h1>
+    <p class="hero-sub">
+        ABC Retail brings you a curated selection of clothing, electronics, and gifts —
+        backed by enterprise-grade Azure Cloud infrastructure.
+    </p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a asp-controller="Account" asp-action="Register"
+           class="btn btn-light px-4">Create Account</a>
+        <a asp-controller="Products" asp-action="Index"
+           class="btn btn-outline-light px-4">Browse Products</a>
+    </div>
+</div>
+
+<!-- Feature Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 text-center p-4">
+            <div class="feature-icon">
+                <i class="bi bi-bag-heart"></i>
+            </div>
+            <h5>Fashion &amp; Lifestyle</h5>
+            <p class="text-muted text-small">Trendy clothing and lifestyle products for every occasion.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 text-center p-4">
+            <div class="feature-icon">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <h5>Secure Checkout</h5>
+            <p class="text-muted text-small">Your payment and personal data are protected end-to-end.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 text-center p-4">
+            <div class="feature-icon">
+                <i class="bi bi-lightning-charge"></i>
+            </div>
+            <h5>Always Available</h5>
+            <p class="text-muted text-small">High-availability cloud infrastructure means we're online when you need us.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Azure Infrastructure — customer benefit framing -->
+<div class="mb-2">
+    <h2 class="mb-1" style="font-size:1.25rem;">Built on Azure Cloud</h2>
+    <p class="text-muted text-small mb-4">
+        Every part of your shopping experience is backed by a dedicated Azure service.
+    </p>
+    <div class="row g-3">
+        <div class="col-md-3 col-sm-6">
+            <div class="azure-tile">
+                <div class="tile-icon"><i class="bi bi-person-check"></i></div>
+                <div class="tile-title">Your account, always safe</div>
+                <p class="tile-desc">Customer profiles and order history stored with full redundancy.</p>
+                <p class="tile-service">Azure Table Storage</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="azure-tile">
+                <div class="tile-icon"><i class="bi bi-images"></i></div>
+                <div class="tile-title">Fast product images</div>
+                <p class="tile-desc">Product photos served instantly from globally distributed storage.</p>
+                <p class="tile-service">Azure Blob Storage</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="azure-tile">
+                <div class="tile-icon"><i class="bi bi-arrow-repeat"></i></div>
+                <div class="tile-title">Real-time order processing</div>
+                <p class="tile-desc">Orders are queued and processed reliably the moment you check out.</p>
+                <p class="tile-service">Azure Queue Storage</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="azure-tile">
+                <div class="tile-icon"><i class="bi bi-journal-check"></i></div>
+                <div class="tile-title">Full audit trail</div>
+                <p class="tile-desc">Every transaction is logged for transparency and dispute resolution.</p>
+                <p class="tile-service">Azure File Storage</p>
+            </div>
+        </div>
+    </div>
+</div>

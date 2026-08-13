@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#3b0764" />
+    <title>@ViewData["Title"] - ABC Retail</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.ui.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        @await Html.PartialAsync("_Navbar")
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    @await Html.PartialAsync("_Footer")
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            var toggle = document.getElementById('cartToggle');
+            var drawer = document.getElementById('cartDrawer');
+            var closeBtn = document.getElementById('closeCart');
+            if (toggle && drawer) {
+                toggle.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    drawer.classList.add('open');
+                    drawer.setAttribute('aria-hidden', 'false');
+                });
+            }
+            if (closeBtn && drawer) {
+                closeBtn.addEventListener('click', function () {
+                    drawer.classList.remove('open');
+                    drawer.setAttribute('aria-hidden', 'true');
+                });
+            }
+        })();
+    </script>
+    @await Html.PartialAsync("_CartDrawer")
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

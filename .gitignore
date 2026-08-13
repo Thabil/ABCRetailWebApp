@@ -1,0 +1,15 @@
+# Ignore build outputs
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+
+# Local config and secrets
+appsettings.Development.json
+local.settings.json
+
+# Ignore version-control folder (local-only tracking)
+version-control/
