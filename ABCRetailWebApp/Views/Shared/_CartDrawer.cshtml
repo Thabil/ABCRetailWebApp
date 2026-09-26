@@ -1,5 +1,4 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
-@using ABCRetailWebApp.Models
 @{
     var ctx = HttpContextAccessor.HttpContext!;
     var cartJson = ctx.Session.GetString("Cart");

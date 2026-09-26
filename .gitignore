@@ -1,15 +1,54 @@
-# Ignore build outputs
+# Build output
 bin/
 obj/
+out/
+publish/
 
-# Visual Studio files
-.vs/
+# .NET
 *.user
 *.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
 
-# Local config and secrets
-appsettings.Development.json
+# Azure Functions local settings (contains connection strings)
 local.settings.json
 
-# Ignore version-control folder (local-only tracking)
-version-control/
+# ASP.NET
+wwwroot/lib/
+
+# Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Logs
+*.log
+applogs/
+
+# Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+.env
+*.env
+appsettings.Development.json

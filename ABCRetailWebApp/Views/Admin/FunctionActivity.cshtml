@@ -1,0 +1,196 @@
+@model ABCRetailWebApp.Models.FunctionActivityViewModel
+
+@{
+    ViewData["Title"] = "Function Activity";
+}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1>Function Activity</h1>
+    <a asp-action="Orders" class="btn btn-brand-outline btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back to Orders
+    </a>
+</div>
+<p class="text-muted text-small mb-4">
+    Live data from Azure Table Storage written by the Azure Functions pipeline.
+    Refreshes on page load.
+</p>
+
+<!-- Summary pills -->
+<div class="d-flex gap-3 mb-4 flex-wrap">
+    <div class="stat-card py-2 px-3" style="min-width:160px;">
+        <div class="stat-label">Orders Audited</div>
+        <div class="stat-value">@Model.OrderAudit.Count</div>
+        <div class="text-muted text-small">OrderProcessingFunction</div>
+    </div>
+    <div class="stat-card py-2 px-3" style="min-width:160px;">
+        <div class="stat-label">Stock Alerts</div>
+        <div class="stat-value">@Model.StockAlerts.Count</div>
+        <div class="text-muted text-small">StockAlertsFunction</div>
+    </div>
+    <div class="stat-card py-2 px-3" style="min-width:160px;">
+        <div class="stat-label">Transactions Logged</div>
+        <div class="stat-value">@Model.Transactions.Count</div>
+        <div class="text-muted text-small">TransactionLogFunction</div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-0" id="activityTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit"
+                type="button" role="tab">
+            <i class="bi bi-clipboard-check me-1"></i>Order Audit
+            <span class="badge bg-secondary ms-1">@Model.OrderAudit.Count</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="stock-tab" data-bs-toggle="tab" data-bs-target="#stock"
+                type="button" role="tab">
+            <i class="bi bi-exclamation-triangle me-1"></i>Stock Alerts
+            <span class="badge @(Model.StockAlerts.Any(s => s.RemainingStock < 1) ? "bg-danger" : "bg-secondary") ms-1">@Model.StockAlerts.Count</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tx-tab" data-bs-toggle="tab" data-bs-target="#tx"
+                type="button" role="tab">
+            <i class="bi bi-journal-text me-1"></i>Transactions
+            <span class="badge bg-secondary ms-1">@Model.Transactions.Count</span>
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content card" style="border-top:none;border-radius:0 0 8px 8px;">
+
+    <!-- ORDER AUDIT TAB -->
+    <div class="tab-pane fade show active p-0" id="audit" role="tabpanel">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Processed At</th>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model.OrderAudit)
+                    {
+                        <tr>
+                            <td class="text-small text-muted">@a.Timestamp?.ToString("dd MMM yyyy HH:mm:ss")</td>
+                            <td class="text-small fw-500" style="font-family:monospace;">@a.OrderId</td>
+                            <td>
+                                <div>@a.CustomerName</div>
+                                <div class="text-muted text-small">@a.CustomerEmail</div>
+                            </td>
+                            <td class="text-price fw-600">R @a.Total.ToString("F2")</td>
+                            <td><span class="badge-stock"><i class="bi bi-check-circle me-1"></i>@a.Status</span></td>
+                        </tr>
+                    }
+                    @if (!Model.OrderAudit.Any())
+                    {
+                        <tr><td colspan="5" class="text-center text-muted py-4"><i class="bi bi-inbox me-2"></i>No audit records yet — place an order to see it here</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- STOCK ALERTS TAB -->
+    <div class="tab-pane fade p-0" id="stock" role="tabpanel">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Last Alert</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Remaining Stock</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.StockAlerts)
+                    {
+                        <tr>
+                            <td class="text-small text-muted">@s.LastAlertTime.ToString("dd MMM yyyy HH:mm:ss")</td>
+                            <td class="fw-500">@s.ProductName</td>
+                            <td><span class="category-pill" style="font-size:0.75rem;">@s.Category</span></td>
+                            <td>
+                                @if (s.RemainingStock < 1)
+                                {
+                                    <span class="badge-out"><i class="bi bi-x-circle me-1"></i>Out of stock</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">@s.RemainingStock left</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Inventory" class="btn btn-sm btn-brand-outline">
+                                    <i class="bi bi-box-seam me-1"></i>Restock
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.StockAlerts.Any())
+                    {
+                        <tr><td colspan="5" class="text-center text-muted py-4"><i class="bi bi-inbox me-2"></i>No stock alerts yet</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TRANSACTIONS TAB -->
+    <div class="tab-pane fade p-0" id="tx" role="tabpanel">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Logged At</th>
+                        <th>Event Type</th>
+                        <th>Reference</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model.Transactions)
+                    {
+                        <tr>
+                            <td class="text-small text-muted">@t.Timestamp?.ToString("dd MMM yyyy HH:mm:ss")</td>
+                            <td>
+                                @if (t.EventType == "OrderProcessed")
+                                {
+                                    <span class="badge bg-info text-white"><i class="bi bi-bag-check me-1"></i>@t.EventType</span>
+                                }
+                                else if (t.EventType == "StockAlertProcessed")
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>@t.EventType</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@t.EventType</span>
+                                }
+                            </td>
+                            <td class="text-small" style="font-family:monospace;">@t.OrderId</td>
+                            <td><span class="badge-stock">@t.Status</span></td>
+                        </tr>
+                    }
+                    @if (!Model.Transactions.Any())
+                    {
+                        <tr><td colspan="4" class="text-center text-muted py-4"><i class="bi bi-inbox me-2"></i>No transactions logged yet</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<div class="mt-3">
+    <a asp-action="Dashboard" class="btn btn-brand-outline btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ABCRetailWebApp — Testing Guide</title>
+<style>
+  :root {
+    --brand: #6c47ff;
+    --brand-light: #ede9ff;
+    --success: #16a34a;
+    --success-light: #dcfce7;
+    --danger: #dc2626;
+    --danger-light: #fee2e2;
+    --warn: #d97706;
+    --warn-light: #fef3c7;
+    --info: #0284c7;
+    --info-light: #e0f2fe;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--gray-900); background: var(--gray-50); line-height: 1.6; }
+  .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: .25rem; }
+  h2 { font-size: 1.35rem; font-weight: 700; margin: 2.5rem 0 .75rem; padding-bottom: .4rem; border-bottom: 2px solid var(--brand-light); color: var(--brand); }
+  h3 { font-size: 1.05rem; font-weight: 600; margin: 1.5rem 0 .5rem; }
+  p { margin-bottom: .75rem; }
+  a { color: var(--brand); }
+  .subtitle { color: #6b7280; margin-bottom: 2rem; font-size: .95rem; }
+  .badge { display: inline-block; padding: .15rem .55rem; border-radius: 99px; font-size: .75rem; font-weight: 600; }
+  .badge-get  { background: var(--info-light);    color: var(--info); }
+  .badge-post { background: var(--success-light); color: var(--success); }
+  .badge-pass { background: var(--success-light); color: var(--success); }
+  .badge-fail { background: var(--danger-light);  color: var(--danger); }
+  .badge-warn { background: var(--warn-light);    color: var(--warn); }
+  .badge-docker { background: #dbeafe; color: #1d4ed8; }
+  .badge-local  { background: #f3e8ff; color: #7c3aed; }
+  pre { background: var(--gray-900); color: #e5e7eb; padding: 1rem 1.25rem; border-radius: var(--radius); overflow-x: auto; font-size: .82rem; line-height: 1.6; margin: .75rem 0 1rem; }
+  code { font-family: 'SF Mono', 'Fira Code', monospace; }
+  pre code { color: inherit; }
+  .inline-code { background: var(--gray-100); padding: .1rem .35rem; border-radius: 4px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: .85em; }
+  .card { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+  .card-success { border-left: 4px solid var(--success); }
+  .card-warn    { border-left: 4px solid var(--warn); }
+  .card-info    { border-left: 4px solid var(--info); }
+  .card-brand   { border-left: 4px solid var(--brand); }
+  .step { display: flex; gap: 1rem; margin-bottom: 1.25rem; }
+  .step-num { flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 700; font-size: .85rem; display: flex; align-items: center; justify-content: center; margin-top: .1rem; }
+  .step-body { flex: 1; }
+  .check-list { list-style: none; padding: 0; }
+  .check-list li { padding: .3rem 0 .3rem 1.75rem; position: relative; }
+  .check-list li::before { content: '☐'; position: absolute; left: 0; color: var(--brand); font-size: 1rem; }
+  .result-table { width: 100%; border-collapse: collapse; margin: .75rem 0 1rem; font-size: .88rem; }
+  .result-table th { background: var(--gray-100); text-align: left; padding: .5rem .75rem; font-weight: 600; border: 1px solid var(--gray-200); }
+  .result-table td { padding: .45rem .75rem; border: 1px solid var(--gray-200); vertical-align: top; }
+  .result-table tr:nth-child(even) td { background: var(--gray-50); }
+  .toc { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 2rem; }
+  .toc ol { padding-left: 1.25rem; }
+  .toc li { margin: .3rem 0; }
+  .toc a { text-decoration: none; color: var(--gray-700); }
+  .toc a:hover { color: var(--brand); }
+  .flow { background: var(--gray-900); color: #a5f3fc; padding: 1rem 1.25rem; border-radius: var(--radius); font-family: 'SF Mono', 'Fira Code', monospace; font-size: .8rem; line-height: 1.8; margin: .75rem 0 1rem; white-space: pre; overflow-x: auto; }
+  .tag-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; align-items: center; }
+  hr { border: none; border-top: 1px solid var(--gray-200); margin: 2rem 0; }
+  .note { background: var(--info-light); border-left: 4px solid var(--info); padding: .75rem 1rem; border-radius: 0 var(--radius) var(--radius) 0; margin: .75rem 0 1rem; font-size: .9rem; }
+  .warn-box { background: var(--warn-light); border-left: 4px solid var(--warn); padding: .75rem 1rem; border-radius: 0 var(--radius) var(--radius) 0; margin: .75rem 0 1rem; font-size: .9rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>ABCRetailWebApp — Testing Guide</h1>
+<p class="subtitle">Azure Functions integration tests &amp; end-to-end application walkthrough &nbsp;·&nbsp; Real Azure Storage account &nbsp;·&nbsp; No emulator required</p>
+
+<div class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#prereqs">Prerequisites &amp; Starting the Application</a></li>
+    <li><a href="#func-tests">Azure Functions Tests (curl)</a>
+      <ol>
+        <li><a href="#t1">Test 1 — TableWriteFunction</a></li>
+        <li><a href="#t2">Test 2 — BlobUploadFunction</a></li>
+        <li><a href="#t3">Test 3 — OrderProcessingFunction</a></li>
+        <li><a href="#t4">Test 4 — StockAlertsFunction</a></li>
+        <li><a href="#t5">Test 5 — TransactionLogFunction</a></li>
+      </ol>
+    </li>
+    <li><a href="#e2e">End-to-End Application Test</a></li>
+    <li><a href="#fallback">Fallback / Resilience Test</a></li>
+    <li><a href="#func-portal">Viewing Functions &amp; Logs in Azure Portal</a></li>
+    <li><a href="#verify">Azure Portal Verification Checklist</a></li>
+    <li><a href="#cleanup">Cleanup</a></li>
+  </ol>
+</div>
+
+<h2 id="prereqs">1. Prerequisites &amp; Starting the Application</h2>
+
+<div class="card card-info">
+  <strong>Two ways to run — choose one:</strong><br>
+  <span class="badge badge-docker">Docker</span> Recommended. Consistent on any OS. Requires Docker Desktop.<br>
+  <span class="badge badge-local">Local</span> Requires .NET 8 SDK + Azure Functions Core Tools v4. Works on Windows without Docker.
+</div>
+
+<div class="note">
+  <strong>Windows quick-start (no Docker):</strong> Double-click <span class="inline-code">START-HERE.bat</span> in the project root. It checks prerequisites and opens both services in separate windows automatically. Or run <span class="inline-code">.\START-HERE.ps1</span> in PowerShell.
+</div>
+
+<h3>Option A — Docker (recommended)</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body">
+  <strong>Install Docker Desktop</strong> from <a href="https://www.docker.com/products/docker-desktop/" target="_blank">docker.com</a> if not already installed.
+</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">
+  <strong>Open a terminal</strong> and navigate to the project root:
+  <pre><code>cd "ABCRetailWebApp"</code></pre>
+  (the folder containing <span class="inline-code">docker-compose.yml</span>)
+</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body">
+  <strong>Build and start both containers:</strong>
+  <pre><code>docker compose up --build</code></pre>
+  First run takes ~3–5 minutes (downloads base images, restores NuGet packages).<br>
+  Subsequent runs use the cache and start in ~30 seconds.
+</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-body">
+  <strong>Wait until you see both services healthy:</strong>
+  <pre><code>abcretail-functions  | BlobUploadFunction: [POST] http://localhost/api/BlobUploadFunction
+abcretail-functions  | TableWriteFunction: [POST] http://localhost/api/TableWriteFunction
+abcretail-functions  | OrderProcessingFunction: queueTrigger
+abcretail-functions  | StockAlertsFunction: queueTrigger
+abcretail-functions  | TransactionLogFunction: queueTrigger
+abcretail-webapp     | Now listening on: http://[::]:8080</code></pre>
+</div></div>
+
+<h3>Option B — Local (without Docker)</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body">
+  <strong>Install prerequisites:</strong>
+  <ul>
+    <li><a href="https://dotnet.microsoft.com/download/dotnet/8.0" target="_blank">.NET 8 SDK</a></li>
+    <li>Azure Functions Core Tools v4: <pre><code>npm install -g azure-functions-core-tools@4 --unsafe-perm true</code></pre></li>
+  </ul>
+</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">
+  <strong>macOS only — fix quarantine warning</strong> (one-time, if you see "Apple could not verify…"):
+  <pre><code>xattr -d com.apple.quarantine "ABCRetailWebApp/bin/Debug/net8.0/ABCRetailWebApp"</code></pre>
+</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body">
+  <strong>Terminal 1 — start the Functions runtime:</strong>
+  <pre><code>cd ABCRetailWebApp.Functions
+func start</code></pre>
+</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-body">
+  <strong>Terminal 2 — start the web app:</strong>
+  <pre><code>cd ABCRetailWebApp/ABCRetailWebApp
+dotnet run</code></pre>
+</div></div>
+
+<div class="note">
+  <strong>URLs used throughout this guide:</strong><br>
+  Web app: <a href="http://localhost:5191" target="_blank">http://localhost:5191</a><br>
+  Functions: <a href="http://localhost:7071" target="_blank">http://localhost:7071</a>
+</div>
+
+
+<h2 id="func-tests">2. Azure Functions Tests</h2>
+<p>Run these from a terminal. <span class="inline-code">curl</span> is available on macOS, Linux, and Windows 10+. Alternatively use <a href="https://www.postman.com/" target="_blank">Postman</a>.</p>
+<div class="note">
+  <strong>Windows users:</strong> Use <strong>PowerShell</strong> (not Command Prompt) to run the curl commands below — PowerShell 5+ ships with curl built in. If you see <span class="inline-code">'curl' is not recognized</span>, open PowerShell and retry. Single quotes inside <span class="inline-code">-d</span> must be escaped on Windows; the easiest fix is to save the JSON to a file and use <span class="inline-code">-d @body.json</span> instead.
+</div>
+
+<h2 id="t1">Test 1 — TableWriteFunction</h2>
+<div class="tag-row">
+  <span class="badge badge-post">POST</span>
+  <code>http://localhost:7071/api/TableWriteFunction</code>
+</div>
+<p>Upserts a product to the <span class="inline-code">Products</span> Azure Table, publishes a message to the <span class="inline-code">product-events</span> queue, and appends to the file log.</p>
+
+<h3>1a — Happy path (create product)</h3>
+<pre><code>curl -s -X POST http://localhost:7071/api/TableWriteFunction \
+  -H "Content-Type: application/json" \
+  -d '{
+    "partitionKey": "Electronics",
+    "rowKey": "prod-006",
+    "productName": "Wireless Earbuds",
+    "description": "True wireless earbuds with active noise cancellation and 24-hour battery life.",
+    "price": 1499.00,
+    "stockQuantity": 50,
+    "category": "Electronics",
+    "brand": "SoundCore",
+    "isAvailable": true,
+    "createdAt": "2025-01-01T00:00:00Z"
+  }'</code></pre>
+<table class="result-table">
+  <tr><th>Expected response</th><td><span class="badge badge-pass">200</span> <span class="inline-code">{"success":true,"rowKey":"prod-006"}</span></td></tr>
+  <tr><th>Azure Table</th><td>Row with PartitionKey=<span class="inline-code">Electronics</span>, RowKey=<span class="inline-code">prod-006</span> exists in <strong>Products</strong><br><em>Portal: Storage account <strong>abcretail2026st10531590</strong> → Tables → Products → Query with PartitionKey eq 'Electronics'</em></td></tr>
+  <tr><th>Queue</th><td><span class="inline-code">product-events</span> has a new message containing <span class="inline-code">ProductCreated</span><br><em>Portal: Storage account → Queues → product-events → Peek</em></td></tr>
+  <tr><th>File log</th><td><span class="inline-code">applogs/logs/product-events-{today}.log</span> has a <span class="inline-code">PRODUCT_CREATED</span> line for <span class="inline-code">prod-006</span><br><em>Portal: Storage account → File shares → applogs → logs → product-events-{today}.log → View/Download</em></td></tr>
+</table>
+
+<h3>1b — Upsert idempotency (run same row key again with different price)</h3>
+<pre><code>curl -s -X POST http://localhost:7071/api/TableWriteFunction \
+  -H "Content-Type: application/json" \
+  -d '{
+    "partitionKey": "Electronics",
+    "rowKey": "prod-006",
+    "productName": "Wireless Earbuds",
+    "price": 1299.00,
+    "stockQuantity": 45,
+    "isAvailable": true,
+    "createdAt": "2025-01-01T00:00:00Z"
+  }'</code></pre>
+<table class="result-table">
+  <tr><th>Expected response</th><td><span class="badge badge-pass">200</span> <span class="inline-code">{"success":true,"rowKey":"prod-006"}</span></td></tr>
+  <tr><th>Azure Table</th><td>Same row now has <span class="inline-code">Price = 1299.00</span> and <span class="inline-code">StockQuantity = 45</span> — no duplicate row<br><em>Portal: Storage account → Tables → Products → click the <strong>prod-006</strong> row to confirm updated values</em></td></tr>
+</table>
+
+<h3>1c — Missing required fields</h3>
+<pre><code>curl -s -X POST http://localhost:7071/api/TableWriteFunction \
+  -H "Content-Type: application/json" \
+  -d '{"productName":"No keys"}'</code></pre>
+<table class="result-table">
+  <tr><th>Expected response</th><td><span class="badge badge-fail">400</span> <span class="inline-code">RowKey and PartitionKey are required</span></td></tr>
+</table>
+
+<h3>1d — Invalid JSON</h3>
+<pre><code>curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:7071/api/TableWriteFunction \
+  -H "Content-Type: application/json" \
+  -d '{bad json'</code></pre>
+<table class="result-table">
+  <tr><th>Expected response</th><td><span class="badge badge-fail">400</span></td></tr>
+</table>
+
+<hr>
+
+<h2 id="t2">Test 2 — BlobUploadFunction</h2>
+<div class="tag-row">
+  <span class="badge badge-post">POST</span>
+  <code>http://localhost:7071/api/BlobUploadFunction</code>
+</div>
+<p>Uploads a product image to the <span class="inline-code">productimages</span> blob container and returns the blob name. Also appends to the file log.</p>
+
+<h3>2a — Happy path (upload image)</h3>
+<p>First create a small test image file:</p>
+<pre><code>echo "fake image bytes for testing" > /tmp/test-product.jpg</code></pre>
+<p>Then upload it:</p>
+<pre><code>curl -s -X POST http://localhost:7071/api/BlobUploadFunction \
+  -F "file=@/tmp/test-product.jpg;type=image/jpeg" \
+  -F "productId=prod-006" \
+  -F "contentType=image/jpeg"</code></pre>
+<table class="result-table">
+  <tr><th>Expected response</th><td><span class="badge badge-pass">200</span> <span class="inline-code">{"blobName":"product_prod-006.jpg"}</span></td></tr>
+  <tr><th>Azure Blob</th><td><span class="inline-code">productimages/product_prod-006.jpg</span> exists, size &gt; 0, Content-Type = <span class="inline-code">image/jpeg</span><br><em>Portal: Storage account <strong>abcretail2026st10531590</strong> → Containers → productimages → find <strong>product_prod-006.jpg</strong> → click to confirm size and content type</em></td></tr>
+  <tr><th>File log</th><td><span class="inline-code">applogs/logs/product-events-{today}.log</span> has a <span class="inline-code">BLOB_UPLOADED</span> line for <span class="inline-code">prod-006</span><br><em>Portal: Storage account → File shares → applogs → logs → product-events-{today}.log → View/Download</em></td></tr>
+</table>
+
+<h3>2b — No file sent</h3>
+<pre><code>curl -s -X POST http://localhost:7071/api/BlobUploadFunction \
+  -F "productId=prod-006"</code></pre>
+<table class="result-table">
+  <tr><th>Expected response</th><td><span class="badge badge-fail">400</span> <span class="inline-code">No file data received</span></td></tr>
+</table>
+
+<h3>2c — Missing productId</h3>
+<pre><code>curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:7071/api/BlobUploadFunction \
+  -F "file=@/tmp/test-product.jpg;type=image/jpeg"</code></pre>
+<table class="result-table">
+  <tr><th>Expected response</th><td><span class="badge badge-fail">400</span></td></tr>
+</table>
+
+<h3>2d — Wrong Content-Type</h3>
+<pre><code>curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:7071/api/BlobUploadFunction \
+  -H "Content-Type: application/json" \
+  -d '{}'</code></pre>
+<table class="result-table">
+  <tr><th>Expected response</th><td><span class="badge badge-fail">400</span> <span class="inline-code">Expected multipart/form-data</span></td></tr>
+</table>
+
+
+<h2 id="t3">Test 3 — OrderProcessingFunction</h2>
+<div class="tag-row"><span class="badge badge-warn">Queue Trigger</span><code>order-processing-queue</code></div>
+<p>Triggered automatically when the web app processes a checkout. You can also trigger it manually via Azure Portal.</p>
+
+<h3>3a — Manual trigger via Azure Portal</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body">Go to <strong>Azure Portal → Storage account abcretail2026st10531590 → Storage browser → Queues → order-processing-queue → Add message</strong></div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">Paste this message body:
+<pre><code>{
+  "eventType": "OrderPlaced",
+  "orderId": "ORD-20250301-TN003",
+  "customerId": "thabo.nkosi@gmail.com",
+  "customerName": "Thabo Nkosi",
+  "customerEmail": "thabo.nkosi@gmail.com",
+  "total": 1748.00,
+  "timestamp": "2025-03-01T08:00:00Z"
+}</code></pre>
+</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body">Wait ~5 seconds, then verify:</div></div>
+<table class="result-table">
+  <tr><th>Functions log</th><td><span class="inline-code">OrderProcessing function triggered</span> → <span class="inline-code">Order audit saved</span> → <span class="inline-code">Transaction event published</span></td></tr>
+  <tr><th>Azure Table → OrderAudit</th><td>Row with PartitionKey=<span class="inline-code">thabo.nkosi@gmail.com</span>, RowKey starts with <span class="inline-code">ORD-20250301-TN003</span><br><em>Portal: Storage account → Storage browser → Tables → OrderAudit → Query: PartitionKey eq 'thabo.nkosi@gmail.com'</em></td></tr>
+  <tr><th>Azure Queue → transaction-queue</th><td>New message with <span class="inline-code">eventType: "OrderProcessed"</span><br><em>Portal: Storage account → Storage browser → Queues → transaction-queue → Peek</em></td></tr>
+</table>
+
+<h3>3b — Trigger via web app checkout</h3>
+<p>See <a href="#e2e">Section 3 — End-to-End Test</a> for the full checkout flow.</p>
+
+<hr>
+
+<h2 id="t4">Test 4 — StockAlertsFunction</h2>
+<div class="tag-row"><span class="badge badge-warn">Queue Trigger</span><code>stock-alerts-queue</code></div>
+<p>Triggered when a product's stock hits zero after a purchase.</p>
+
+<h3>4a — Manual trigger via Azure Portal</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body">Go to <strong>Azure Portal → Storage account abcretail2026st10531590 → Storage browser → Queues → stock-alerts-queue → Add message</strong></div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">Paste:
+<pre><code>{
+  "eventType": "OutOfStock",
+  "productId": "prod-015",
+  "productName": "Suede Chelsea Boots",
+  "category": "Footwear",
+  "remainingStock": 0,
+  "timestamp": "2025-03-01T08:00:00Z"
+}</code></pre>
+</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body">Wait ~5 seconds, then verify:</div></div>
+<table class="result-table">
+  <tr><th>Azure Table → StockAlerts</th><td>Row with PartitionKey=<span class="inline-code">prod-015</span><br><em>Portal: Storage account → Storage browser → Tables → StockAlerts → Query: PartitionKey eq 'prod-015'</em></td></tr>
+  <tr><th>Azure Blob → reports</th><td>File <span class="inline-code">stock-alerts-{today}.csv</span> exists and contains <span class="inline-code">prod-015</span> data<br><em>Portal: Storage account → Storage browser → Containers → reports → click the csv file → Download</em></td></tr>
+  <tr><th>Azure Queue → transaction-queue</th><td>New message with <span class="inline-code">eventType: "StockAlertProcessed"</span><br><em>Portal: Storage account → Storage browser → Queues → transaction-queue → Peek</em></td></tr>
+</table>
+
+<hr>
+
+<h2 id="t5">Test 5 — TransactionLogFunction</h2>
+<div class="tag-row"><span class="badge badge-warn">Queue Trigger</span><code>transaction-queue</code></div>
+<p>This function fires automatically after Tests 3 and 4 (both publish to <span class="inline-code">transaction-queue</span>). After running either of those tests, verify:</p>
+<table class="result-table">
+  <tr><th>Azure Table → Transactions</th><td>Row with PartitionKey=<span class="inline-code">OrderProcessed</span> or <span class="inline-code">StockAlertProcessed</span><br><em>Portal: Storage account abcretail2026st10531590 → Storage browser → Tables → Transactions → Query: PartitionKey eq 'OrderProcessed'</em></td></tr>
+  <tr><th>Azure Files → applogs/transactions</th><td>File <span class="inline-code">transactions-{today}.log</span> with log entries<br><em>Portal: Storage account → Storage browser → File shares → applogs → transactions → click the log file → View/Download</em></td></tr>
+</table>
+
+<h3>5a — Direct manual trigger</h3>
+<p>Portal: Storage account → Storage browser → Queues → <span class="inline-code">transaction-queue</span> → Add message:</p>
+<pre><code>{
+  "eventType": "TransactionProcessed",
+  "orderId": "ORD-20250205-LV001",
+  "timestamp": "2025-02-05T08:00:00Z",
+  "details": {}
+}</code></pre>
+
+<hr>
+
+<h2 id="e2e">3. End-to-End Application Test</h2>
+<p>With both the web app and functions running, walk through the full customer and admin flows.</p>
+
+<div class="flow">Customer Flow
+─────────────────────────────────────────────────────
+1. Open http://localhost:5191
+2. Click "Register" → create a customer account
+3. Browse products on the home page
+4. Click "Add to Cart" on any product
+5. Click the cart icon → review cart
+6. Click "Checkout"
+7. Enter any card details (e.g. 4111 1111 1111 1111 / 12/26 / 123)
+8. Click "Pay Now"
+
+Expected in functions log (within ~5 seconds):
+  [OrderProcessingFunction] Order audit saved. OrderId: ORD-...
+  [TransactionLogFunction]  Transaction logged to table.
+  (if stock hit 0) [StockAlertsFunction] Stock alert saved to table.</div>
+
+<div class="flow">Admin Flow
+─────────────────────────────────────────────────────
+1. Open http://localhost:5191
+2. Log in with admin credentials (check seed-data.json for the admin email)
+3. Navigate to Admin → Add Product
+4. Fill in product details and optionally upload an image
+5. Click "Add Product"
+
+Expected:
+  → Redirected to Inventory immediately (no hang)
+  → New product appears in the inventory list
+  → In functions log: [TableWriteFunction] Product upserted.
+  → If image uploaded: [BlobUploadFunction] Blob uploaded.
+  → product-events queue has a new ProductCreated message</div>
+
+<div class="flow">Admin Queue Management
+─────────────────────────────────────────────────────
+1. Admin → Order Queue
+2. Click "Process Next" to dequeue and mark an order as Shipped
+3. Admin → System Logs — view file log entries
+4. Admin → Dashboard → "Verify Inventory Stock" — cross-references
+   stock-alerts-queue with current product stock levels</div>
+
+<hr>
+
+<h2 id="fallback">4. Fallback / Resilience Test</h2>
+<p>Verifies the web app never hangs or shows an error when functions are unavailable.</p>
+
+<h3>Docker</h3>
+<pre><code>docker compose stop functions</code></pre>
+
+<h3>Local</h3>
+<p>Close the <span class="inline-code">func start</span> terminal.</p>
+
+<div class="step"><div class="step-num">1</div><div class="step-body">With functions stopped, go to Admin → Add Product and submit a new product with an image.</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">
+  <strong>Expected:</strong>
+  <ul>
+    <li>Admin is redirected to Inventory within ~3 seconds — no hang, no error page</li>
+    <li>Product appears in the inventory list (direct table write succeeded)</li>
+    <li>Image shows as a placeholder (BlobUploadFunction was unreachable)</li>
+    <li>No <span class="inline-code">500</span> error, no exception shown to the user</li>
+  </ul>
+</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body">Restart functions: <span class="inline-code">docker compose start functions</span> (or re-run <span class="inline-code">func start</span>).</div></div>
+
+<div class="warn-box">The fire-and-forget <span class="inline-code">TableWriteFunction</span> call will have already timed out and been discarded — this is expected. The product was already written directly by the web app. The audit log entry and queue message for that product will be missing, which is the documented trade-off of the fire-and-forget pattern.</div>
+
+<hr>
+
+<h2 id="func-portal">5. Viewing Functions &amp; Logs in Azure Portal</h2>
+<p>These functions run locally (Docker or <span class="inline-code">func start</span>) and connect to the real Azure Storage account. The Azure Portal does <strong>not</strong> show local function invocations in Application Insights — but you can see the functions listed, browse their code, and read all side-effects (tables, queues, blobs, file logs) that the local run produced.</p>
+
+<div class="note">
+  <strong>Note:</strong> Because the Function App resource has not been deployed to Azure (functions run locally only), the <em>Monitor → Invocations</em> and <em>Application Insights</em> tabs in the portal will be empty. All runtime evidence lives in the storage account — covered in <a href="#verify">Section 6</a>.
+</div>
+
+<h3>Navigate to the Function App in Azure Portal</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body">
+  Go to <a href="https://portal.azure.com" target="_blank" rel="noopener noreferrer">portal.azure.com</a> and sign in.
+</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">
+  In the top search bar type <strong>Function App</strong> and select it from the results.
+</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body">
+  If a Function App resource exists for this project, click it. If none exists yet, the functions are running locally only — skip to the <em>Reading local function output</em> section below.
+</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-body">
+  In the left sidebar of the Function App, click <strong>Functions</strong>. You will see all five functions listed:
+  <ul style="margin-top:.5rem">
+    <li><strong>TableWriteFunction</strong> — HTTP trigger</li>
+    <li><strong>BlobUploadFunction</strong> — HTTP trigger</li>
+    <li><strong>OrderProcessingFunction</strong> — Queue trigger</li>
+    <li><strong>StockAlertsFunction</strong> — Queue trigger</li>
+    <li><strong>TransactionLogFunction</strong> — Queue trigger</li>
+  </ul>
+</div></div>
+
+<h3>View a function's invocation history &amp; logs (deployed only)</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body">
+  Click any function name, e.g. <strong>OrderProcessingFunction</strong>.
+</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">
+  Click <strong>Monitor</strong> in the function's left sidebar. The <em>Invocations</em> tab shows a timestamped list of every execution — green for success, red for failure.
+</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body">
+  Click any row in the invocations list to open the <strong>invocation detail</strong>. This shows the full log output for that single run, including any <span class="inline-code">ILogger</span> messages the function wrote (e.g. <span class="inline-code">Order audit saved. OrderId: ORD-...</span>).
+</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-body">
+  Click the <strong>Logs</strong> tab (next to Invocations) for a live streaming log — equivalent to watching the terminal when running locally.
+</div></div>
+
+<h3>Reading local function output (no deployed Function App)</h3>
+<p>When running locally, function log output appears directly in the terminal running <span class="inline-code">func start</span> (or in the Docker container log). To see it:</p>
+
+<table class="result-table">
+  <tr><th>How you're running</th><th>Where to see function logs</th></tr>
+  <tr>
+    <td>Local (<span class="inline-code">func start</span>)</td>
+    <td>The terminal window where you ran <span class="inline-code">func start</span>. Each function execution prints timestamped lines like:<br>
+    <span class="inline-code">[2026-09-16 11:03:17] Executing 'TableWriteFunction'</span><br>
+    <span class="inline-code">[2026-09-16 11:03:17] Product upserted. RowKey: prod-006</span>
+    </td>
+  </tr>
+  <tr>
+    <td>Docker</td>
+    <td>Run <span class="inline-code">docker compose logs -f functions</span> in a terminal to tail the functions container log in real time. Or view it in Docker Desktop: open the <strong>abcretail-functions</strong> container → <strong>Logs</strong> tab.</td>
+  </tr>
+</table>
+
+<h3>Reading the persistent file logs written by the functions</h3>
+<p>The functions also write structured logs to Azure File Share, which you can read any time in the portal regardless of whether the functions are currently running:</p>
+
+<table class="result-table">
+  <tr><th>Log file</th><th>Written by</th><th>Portal path</th></tr>
+  <tr>
+    <td><span class="inline-code">applogs/logs/product-events-{date}.log</span></td>
+    <td>TableWriteFunction, BlobUploadFunction</td>
+    <td>portal.azure.com → Storage accounts → <strong>abcretail2026st10531590</strong> → Storage browser → File shares → applogs → logs → click the file → <strong>View/Download</strong></td>
+  </tr>
+  <tr>
+    <td><span class="inline-code">applogs/transactions/transactions-{date}.log</span></td>
+    <td>TransactionLogFunction</td>
+    <td>portal.azure.com → Storage accounts → <strong>abcretail2026st10531590</strong> → Storage browser → File shares → applogs → transactions → click the file → <strong>View/Download</strong></td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>Tip — reading logs in the web app:</strong> You can also read the file logs without leaving the app. Log in as admin → <strong>Admin → System Logs</strong>. This page reads directly from the Azure File Share and displays the same log content in the browser.
+</div>
+
+<hr>
+
+<h2 id="verify">6. Azure Portal Verification Checklist</h2>
+<p>After running the full end-to-end test, verify the following in the Azure Portal under storage account <strong>abcretail2026st10531590</strong>. Navigate to: <strong>portal.azure.com → Storage accounts → abcretail2026st10531590 → Storage browser</strong></p>
+
+<table class="result-table">
+  <tr><th>Where to look</th><th>Portal path</th><th>What to check</th></tr>
+  <tr><td>Tables → Products</td><td>Storage browser → Tables → Products → Query: PartitionKey eq 'Electronics'</td><td>Row for <span class="inline-code">prod-006</span> (Wireless Earbuds) with updated Price = 1299.00</td></tr>
+  <tr><td>Tables → OrderAudit</td><td>Storage browser → Tables → OrderAudit → Query: PartitionKey eq 'thabo.nkosi@gmail.com'</td><td>Row for <span class="inline-code">ORD-20250301-TN003</span></td></tr>
+  <tr><td>Tables → StockAlerts</td><td>Storage browser → Tables → StockAlerts → Query: PartitionKey eq 'prod-015'</td><td>Row for <span class="inline-code">prod-015</span> (Suede Chelsea Boots)</td></tr>
+  <tr><td>Tables → Transactions</td><td>Storage browser → Tables → Transactions → Query: PartitionKey eq 'OrderProcessed'</td><td>Rows for each OrderProcessed / StockAlertProcessed event</td></tr>
+  <tr><td>Containers → productimages</td><td>Storage browser → Blob containers → productimages → scroll to find file</td><td><span class="inline-code">product_prod-006.jpg</span> present, size &gt; 0</td></tr>
+  <tr><td>Containers → reports</td><td>Storage browser → Blob containers → reports → click csv file → Download</td><td><span class="inline-code">stock-alerts-{today}.csv</span> contains <span class="inline-code">prod-015</span></td></tr>
+  <tr><td>Queues → product-events</td><td>Storage browser → Queues → product-events → Peek</td><td>Messages with <span class="inline-code">ProductCreated</span> event type for <span class="inline-code">prod-006</span></td></tr>
+  <tr><td>Queues → order-processing-queue</td><td>Storage browser → Queues → order-processing-queue → Peek</td><td>Empty (messages consumed by function)</td></tr>
+  <tr><td>Queues → stock-alerts-queue</td><td>Storage browser → Queues → stock-alerts-queue → Peek</td><td>Empty (messages consumed by function)</td></tr>
+  <tr><td>Queues → transaction-queue</td><td>Storage browser → Queues → transaction-queue → Peek</td><td>Empty (messages consumed by function)</td></tr>
+  <tr><td>File shares → applogs → logs</td><td>Storage browser → File shares → applogs → logs → click log file → View/Download</td><td><span class="inline-code">product-events-{today}.log</span> has PRODUCT_CREATED for <span class="inline-code">prod-006</span> and BLOB_UPLOADED lines</td></tr>
+  <tr><td>File shares → applogs → transactions</td><td>Storage browser → File shares → applogs → transactions → click log file → View/Download</td><td><span class="inline-code">transactions-{today}.log</span> with transaction entries for <span class="inline-code">ORD-20250301-TN003</span></td></tr>
+</table>
+
+<h3>Using az-cli container (Docker only)</h3>
+<pre><code># Check Products table
+docker compose --profile tools run --rm az-cli \
+  az storage entity show --table-name Products \
+  --partition-key Electronics --row-key prod-006 -o table
+
+# Check blob exists
+docker compose --profile tools run --rm az-cli \
+  az storage blob show --container-name productimages \
+  --name "product_prod-006.jpg" \
+  --query "{name:name,size:properties.contentLength}" -o table
+
+# Peek product-events queue
+docker compose --profile tools run --rm az-cli \
+  az storage message peek --queue-name product-events \
+  --num-messages 5 -o table</code></pre>
+
+<hr>
+
+<h2 id="cleanup">7. Cleanup After Testing</h2>
+<p>Remove test data from Azure Portal to keep the storage account clean:</p>
+<ul class="check-list">
+  <li>Tables → Products → delete row <span class="inline-code">prod-006</span> (or restore original price 1499.00 if preferred)</li>
+  <li>Tables → OrderAudit → delete row <span class="inline-code">ORD-20250301-TN003</span></li>
+  <li>Tables → StockAlerts → delete row <span class="inline-code">prod-015</span></li>
+  <li>Tables → Transactions → delete test rows</li>
+  <li>Containers → productimages → delete <span class="inline-code">product_prod-006.jpg</span></li>
+  <li>Queues → clear <span class="inline-code">product-events</span> and <span class="inline-code">transaction-queue</span> if needed</li>
+</ul>
+
+<h3>Stop Docker containers</h3>
+<pre><code>docker compose down</code></pre>
+
+<hr>
+<p style="color:#6b7280;font-size:.85rem;text-align:center;">ABCRetailWebApp · Azure Functions Integration · Testing Guide</p>
+
+</div>
+</body>
+</html>

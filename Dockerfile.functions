@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ABCRetailWebApp.Functions/ABCRetailWebApp.Functions.csproj ./ABCRetailWebApp.Functions/
+RUN dotnet restore ABCRetailWebApp.Functions/ABCRetailWebApp.Functions.csproj
+COPY ABCRetailWebApp.Functions/ ./ABCRetailWebApp.Functions/
+RUN dotnet publish ABCRetailWebApp.Functions/ABCRetailWebApp.Functions.csproj -c Release -o /app/publish
+
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/aspnet:8.0
+RUN apt-get update && apt-get install -y curl gnupg ntpdate && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g azure-functions-core-tools@4 --unsafe-perm true && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+WORKDIR /home/site/wwwroot
+COPY --from=build /app/publish .
+COPY ABCRetailWebApp.Functions/local.settings.json .
+EXPOSE 80
+ENV AzureWebJobsScriptRoot=/home/site/wwwroot
+ENV AzureFunctionsJobHost__Logging__Console__IsEnabled=true
+ENV WEBSITE_HOSTNAME=localhost
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

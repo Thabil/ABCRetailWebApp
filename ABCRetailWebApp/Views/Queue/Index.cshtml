@@ -1,28 +1,30 @@
-﻿@model IEnumerable<string>
+@model IEnumerable<string>
 
-<h1>Queue Messages</h1>
+@{
+    ViewData["Title"] = "Product Events";
+}
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h4>Product Events Queue</h4>
+<div class="page-header">
+    <h1>Product Events Queue</h1>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+                <h5>No messages in queue</h5>
             </div>
-            <div class="card-body">
-                @if (!Model.Any())
+        }
+        else
+        {
+            <ul class="list-group list-group-flush">
+                @foreach (var message in Model)
                 {
-                    <div class="alert alert-info">No messages in queue</div>
+                    <li class="list-group-item text-small">@message</li>
                 }
-                else
-                {
-                    <ul class="list-group">
-                        @foreach (var message in Model)
-                        {
-                            <li class="list-group-item">@message</li>
-                        }
-                    </ul>
-                }
-            </div>
-        </div>
+            </ul>
+        }
     </div>
 </div>

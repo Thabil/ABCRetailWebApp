@@ -69,6 +69,25 @@ builder.Services.AddScoped<ITableStorageService<ABCRetailWebApp.Models.OrderEnti
     return new TableStorageService<ABCRetailWebApp.Models.OrderEntity>(tableClient, "Orders");
 });
 
+// Table Storage - Function audit tables (read-only from webapp side)
+builder.Services.AddScoped<ITableStorageService<ABCRetailWebApp.Models.OrderAuditEntity>>(provider =>
+{
+    var tableClient = provider.GetRequiredService<TableServiceClient>();
+    return new TableStorageService<ABCRetailWebApp.Models.OrderAuditEntity>(tableClient, "OrderAudit");
+});
+
+builder.Services.AddScoped<ITableStorageService<ABCRetailWebApp.Models.StockAlertEntity>>(provider =>
+{
+    var tableClient = provider.GetRequiredService<TableServiceClient>();
+    return new TableStorageService<ABCRetailWebApp.Models.StockAlertEntity>(tableClient, "StockAlerts");
+});
+
+builder.Services.AddScoped<ITableStorageService<ABCRetailWebApp.Models.TransactionLogEntity>>(provider =>
+{
+    var tableClient = provider.GetRequiredService<TableServiceClient>();
+    return new TableStorageService<ABCRetailWebApp.Models.TransactionLogEntity>(tableClient, "Transactions");
+});
+
 // Blob Storage
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
@@ -88,6 +107,13 @@ builder.Services.AddScoped<IFileStorageService>(provider =>
 
 // ✅ Add AuthService
 builder.Services.AddScoped<AuthService>();
+
+// Azure Functions HTTP client (fire-and-forget with timeout + retry)
+builder.Services.AddHttpClient<FunctionHttpClient>(client =>
+{
+    var baseUrl = builder.Configuration["FunctionsBaseUrl"] ?? "http://localhost:7071";
+    client.BaseAddress = new Uri(baseUrl);
+});
 
 var app = builder.Build();
 

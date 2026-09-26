@@ -1,7 +1,24 @@
 @model IEnumerable<ABCRetailWebApp.Models.QueueMessageModel>
+@using System.Text.Json
 
 @{
     ViewData["Title"] = "Order Queue";
+
+    string OrderSummary(string? content)
+    {
+        if (string.IsNullOrEmpty(content)) return "(empty)";
+        try
+        {
+            var doc = JsonDocument.Parse(content);
+            var r   = doc.RootElement;
+            var id   = r.TryGetProperty("orderId",      out var o) ? o.GetString() : null;
+            var name = r.TryGetProperty("customerName", out var n) ? n.GetString() : null;
+            var tot  = r.TryGetProperty("total",        out var t) ? t.GetDecimal().ToString("F2") : null;
+            if (id != null) return $"{id} | {name} | R{tot}";
+        }
+        catch { }
+        return content;
+    }
 }
 
 <!-- Toast notification -->
@@ -54,13 +71,26 @@
                     {
                         @foreach (var msg in Model)
                         {
-                            <tr>
+                            <tr class="@(msg.IsPoisoned ? "table-danger" : "")">  
                                 <td class="text-small text-muted">@msg.Timestamp?.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                                <td>@msg.Content</td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-brand process-btn">
-                                        <i class="bi bi-play-fill me-1"></i>Process
-                                    </button>
+                                    @if (msg.IsPoisoned)
+                                    {
+                                        <span class="badge bg-danger me-2">FAILED</span>
+                                    }
+                                    @OrderSummary(msg.Content)
+                                </td>
+                                <td>
+                                    @if (!msg.IsPoisoned)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-brand process-btn">
+                                            <i class="bi bi-play-fill me-1"></i>Process
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted text-small">Poison — purge to clear</span>
+                                    }
                                 </td>
                             </tr>
                         }

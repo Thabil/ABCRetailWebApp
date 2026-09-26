@@ -86,8 +86,21 @@ namespace ABCRetailWebApp.Controllers
         {
             if (quantity <= 0) quantity = 1;
 
+            var product = (await _productService.GetEntitiesAsync())
+                .FirstOrDefault(p => p.RowKey == productId);
+
+            if (product == null)
+                return RedirectToAction("Index");
+
             var cart = GetCart();
             var existingItem = cart.FirstOrDefault(i => i.ProductId == productId);
+            var currentCartQty = existingItem?.Quantity ?? 0;
+
+            if (currentCartQty + quantity > product.StockQuantity)
+            {
+                TempData["CartError"] = $"Only {product.StockQuantity} unit(s) of '{product.ProductName}' available. You already have {currentCartQty} in your cart.";
+                return RedirectToAction("Index");
+            }
 
             if (existingItem != null)
             {
@@ -95,20 +108,14 @@ namespace ABCRetailWebApp.Controllers
             }
             else
             {
-                var product = (await _productService.GetEntitiesAsync())
-                    .FirstOrDefault(p => p.RowKey == productId);
-
-                if (product != null)
+                cart.Add(new CartItem
                 {
-                    cart.Add(new CartItem
-                    {
-                        ProductId = product.RowKey,
-                        ProductName = product.ProductName,
-                        Price = product.Price,
-                        Quantity = quantity,
-                        ImageBlobName = product.ImageBlobName
-                    });
-                }
+                    ProductId = product.RowKey,
+                    ProductName = product.ProductName,
+                    Price = product.Price,
+                    Quantity = quantity,
+                    ImageBlobName = product.ImageBlobName
+                });
             }
 
             SaveCart(cart);
@@ -209,9 +216,14 @@ namespace ABCRetailWebApp.Controllers
         // PROCESS PAYMENT
         // ============================================================
 
+        public record ProcessPaymentRequest(string CardNumber, string ExpiryDate, string Cvc);
+
         [HttpPost]
-        public async Task<IActionResult> ProcessPayment(string cardNumber, string expiryDate, string cvc)
+        public async Task<IActionResult> ProcessPayment([FromBody] ProcessPaymentRequest request)
         {
+            var cardNumber = request?.CardNumber;
+            var expiryDate = request?.ExpiryDate;
+            var cvc        = request?.Cvc;
             try
             {
                 var cart = GetCart();
@@ -260,9 +272,40 @@ namespace ABCRetailWebApp.Controllers
                 // ✅ CORRECT: Save to Orders table using _orderService
                 await _orderService.AddEntityAsync(order);
 
-                // Send to Queue
-                await _queueService.SendMessageAsync("order-processing-queue",
-                    $"Order {orderId} placed by {user.FirstName} {user.LastName} | Total: R{total:F2}");
+                // Decrement stock and send out-of-stock alerts
+                var allProducts = await _productService.GetEntitiesAsync();
+                foreach (var item in cart)
+                {
+                    var product = allProducts.FirstOrDefault(p => p.RowKey == item.ProductId);
+                    if (product == null) continue;
+
+                    product.StockQuantity -= item.Quantity;
+                    if (product.StockQuantity < 0) product.StockQuantity = 0;
+                    await _productService.UpdateEntityAsync(product);
+
+                    if (product.StockQuantity < 1)
+                    {
+                        var stockAlertMessage = EventMessageHelper.CreateStockAlertEvent(
+                            product.RowKey,
+                            product.ProductName,
+                            product.Category,
+                            product.StockQuantity,
+                            DateTime.UtcNow
+                        );
+                        await _queueService.SendMessageAsync("stock-alerts-queue", stockAlertMessage);
+                    }
+                }
+
+                // Send to Queue (JSON format)
+                var orderMessage = EventMessageHelper.CreateOrderEvent(
+                    orderId,
+                    user.RowKey,
+                    $"{user.FirstName} {user.LastName}",
+                    user.Email,
+                    (decimal)total,
+                    DateTime.UtcNow
+                );
+                await _queueService.SendMessageAsync("order-processing-queue", orderMessage);
 
                 // Log to File
                 await _fileService.AppendToLogAsync($"orders-{DateTime.Now:yyyy-MM-dd}.log",

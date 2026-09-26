@@ -10,6 +10,15 @@ namespace ABCRetailWebApp.Models
         public int PendingOrders { get; set; }
         public int AuditLogEntries { get; set; }
         public double TotalRevenue { get; set; }
+        public int StockAlertCount { get; set; }
         public List<OrderEntity> AllOrders { get; set; } = new();
+        public List<ProductEntity> OutOfStockProducts { get; set; } = new();
+    }
+
+    public class FunctionActivityViewModel
+    {
+        public List<OrderAuditEntity>     OrderAudit   { get; set; } = new();
+        public List<StockAlertEntity>     StockAlerts  { get; set; } = new();
+        public List<TransactionLogEntity> Transactions { get; set; } = new();
     }
 }

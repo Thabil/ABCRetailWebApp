@@ -49,11 +49,11 @@ namespace ABCRetailWebApp.Controllers
                 customer.IsActive = true;
                 await _customerService.AddEntityAsync(customer);
 
-                // ✅ Send to Queue
+                //  Send to Queue
                 var queueMessage = $"New customer created: {customer.FirstName} {customer.LastName}, Email: {customer.Email}";
                 await _queueService.SendMessageAsync("customer-events", queueMessage);
 
-                // ✅ Log to File Storage
+                //  Log to File Storage
                 await _fileService.AppendToLogAsync($"customers-{DateTime.Now:yyyy-MM-dd}.log",
                     $"[{DateTime.UtcNow}] Created customer: {customer.FirstName} {customer.LastName} - {customer.Email}");
 

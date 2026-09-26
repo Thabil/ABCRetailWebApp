@@ -1,0 +1,55 @@
+services:
+
+  functions:
+    build:
+      context: .
+      dockerfile: Dockerfile.functions
+    platform: linux/amd64
+    container_name: abcretail-functions
+    restart: always
+    ports:
+      - "7071:80"
+    environment:
+      - TZ=UTC
+      - AzureWebJobsStorage=DefaultEndpointsProtocol=https;AccountName=;AccountKey=;EndpointSuffix=core.windows.net
+      - FUNCTIONS_WORKER_RUNTIME=dotnet-isolated
+      - AzureFunctionsJobHost__Extensions__Queues__MessageEncoding=None
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile.webapp
+    container_name: abcretail-webapp
+    ports:
+      - "5191:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__AzureStorage=DefaultEndpointsProtocol=https;AccountName=;AccountKey=;EndpointSuffix=core.windows.net
+      - FunctionsBaseUrl=http://functions:80
+    # Wait for functions to be healthy, then add a small delay for DNS to settle
+    depends_on:
+      functions:
+        condition: service_healthy
+    # Retry DNS-dependent startup: ASP.NET will retry on transient failures via Azure SDK retry policy
+    restart: on-failure
+
+  # Not a long-running service — used only for storage verification:
+  # docker compose run --rm az-cli <command>
+  az-cli:
+    image: mcr.microsoft.com/azure-cli
+    container_name: abcretail-az-cli
+    entrypoint: /bin/bash
+    stdin_open: true
+    tty: true
+    environment:
+      - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=;AccountKey=;EndpointSuffix=core.windows.net
+    profiles:
+      - tools

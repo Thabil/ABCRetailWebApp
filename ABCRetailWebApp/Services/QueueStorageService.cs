@@ -28,14 +28,11 @@ namespace ABCRetailWebApp.Services
             if (response.Value == null) return null;
 
             var msg = response.Value;
-            string decoded;
-            try { decoded = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(msg.MessageText)); }
-            catch { decoded = msg.MessageText; }
 
             // Delete immediately after receiving
             await queueClient.DeleteMessageAsync(msg.MessageId, msg.PopReceipt);
 
-            return (decoded, msg.MessageId, msg.PopReceipt);
+            return (msg.MessageText, msg.MessageId, msg.PopReceipt);
         }
 
         public async Task DeleteMessageAsync(string queueName, string messageId, string popReceipt)
@@ -50,11 +47,7 @@ namespace ABCRetailWebApp.Services
             await queueClient.CreateIfNotExistsAsync();
 
             var messages = await queueClient.PeekMessagesAsync(maxMessages);
-            return messages.Value.Select(m =>
-            {
-                try { return System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(m.MessageText)); }
-                catch { return m.MessageText; }
-            });
+            return messages.Value.Select(m => m.MessageText);
         }
 
         public async Task ClearQueueAsync(string queueName)

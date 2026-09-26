@@ -39,8 +39,6 @@ namespace ABCRetailWebApp.Services
             await SeedCustomersAsync(doc.RootElement.GetProperty("customers"), result, overwrite);
             await SeedProductsAsync(doc.RootElement.GetProperty("products"),   result, overwrite);
 
-            // Clear queue before seeding orders to prevent duplicates on restart
-            await _queueClient.ClearMessagesAsync();
             await SeedOrdersAsync(doc.RootElement.GetProperty("orders"),       result, overwrite);
 
             return result;
@@ -200,11 +198,20 @@ namespace ABCRetailWebApp.Services
                     else
                         await _orders.AddEntityAsync(entity);
 
-                    // Push non-completed orders to the queue so admin can see them
-                    if (!entity.IsCompleted && (entity.OrderStatus == "Processing" || entity.OrderStatus == "Pending"))
+                    // Only push to queue if this is a freshly-created order (not historical seed data)
+                    // Use a 1-hour window (not 24h) to avoid re-queuing orders placed earlier the same day on restart
+                    var isRecent = (DateTime.UtcNow - entity.CreatedAt).TotalMinutes < 60;
+                    if (!exists && isRecent && !entity.IsCompleted && (entity.OrderStatus == "Processing" || entity.OrderStatus == "Pending"))
                     {
-                        var msg = $"Order {entity.OrderId} by {entity.CustomerName} | R{entity.TotalAmount:F2} | Status: {entity.OrderStatus}";
-                        await _queueClient.SendMessageAsync(Convert.ToBase64String(Encoding.UTF8.GetBytes(msg)));
+                        var msg = EventMessageHelper.CreateOrderEvent(
+                            entity.OrderId!,
+                            entity.CustomerId!,
+                            entity.CustomerName!,
+                            entity.CustomerEmail!,
+                            (decimal)entity.TotalAmount,
+                            entity.CreatedAt
+                        );
+                        await _queueClient.SendMessageAsync(msg);
                     }
 
                     result.Inserted++;
